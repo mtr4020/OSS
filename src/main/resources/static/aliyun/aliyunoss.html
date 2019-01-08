@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>阿里云oss操作</title>
+</head>
+<body>
+<h1>阿里云对象储存测试</h1>
+<hr>
+<h2>文件上传</h2>
+<input type="file" id="file1"><br>
+<input type="button" onclick="load('/aliyun/streamFile','file1')" value="上传">
+<hr>
+<h2>文件删除/授权</h2>
+文件名:<input type="text" id="delete1" style="width: 500px"><br><br>
+文件权限:<input type="text" id="acl">填写就是授权,不填就是获取权限<br><br>
+<input type="button" onclick="getAjax('/aliyun/deleteOne','delete1')" value="删除">
+<input type="button" onclick="getAjax('/aliyun/acl','delete1')" value="权限">
+<input type="button" onclick="getAjax('/aliyun/url','delete1')" value="获取访问地址">
+<input type="button" onclick="goDown('/aliyun/down','delete1')" value="下载文件">
+<hr>
+<h2>获取文件夹内所有文件/以指定字符开头的文件</h2>
+文件夹(前不带 / 后带 / ):<input type="text" id="tableName" width="200px"><br><br>
+<input type="button" onclick="getAjax('/aliyun/objectList','tableName')" value="获取文件列表"><br>
+<table id="table">
+</table>
+<hr>
+
+</body>
+<script src="/js/jquery-2.1.1.js" type="text/javascript"></script>
+<script>
+    var photoFileDate;
+    var data;
+    //用来上传文件
+    function load(add,id) {
+        var fa = new FormData();
+        photoFileDate = $("#" + id).get(0).files[0];
+        fa.append("file", photoFileDate);
+        $.ajax({
+            url: add,
+            type: "post",
+            processData: false,
+            contentType: false,
+            data: fa,
+            dataType: "json",
+            success: function (resq) {
+                console.log(resq.msg);
+                data = resq.data;
+            }
+        })
+    }
+    //文件删除/授权
+    function getAjax(add,id){
+        var data = $("#" + id).val();
+        var facl = $("#acl").val();
+        $.ajax({
+            url: add,
+            type: "get",
+            data: {
+                objectName : data,
+                acl : facl
+            },
+            dataType: "json",
+            success: function (resq) {
+                console.log(resq.msg);
+                data = resq.data;
+                if(id == "tableName"){
+                    var str = "";
+                    $("#table").html(str);
+                    for (var i = 0; i < data.length; i++) {
+                        str += "<tr><td>" +data[i] + "</td></tr>";
+                    }
+                    $("#table").append(str);
+                }
+            }
+        })
+    }
+    //下载文件
+    function goDown(add,id){
+        var data = $("#" + id).val();
+        window.location.href = add + '?objectName=' + data;
+    }
+
+</script>
+</html>
